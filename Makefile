@@ -41,7 +41,8 @@ coverage:
 
 ## Set up dev requirements (bandit, black & coverage)
 dev-setup: 
-	create-virtual-environment bandit black coverage
+	create-virtual-environment
+#bandit black coverage
 
 
 ## Run the security test (bandit) on all directories and the parent directory
