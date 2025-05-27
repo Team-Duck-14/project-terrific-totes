@@ -1,12 +1,9 @@
 # Environment variables
-
 PYTHON_INTERPRETER = python
 PIP = $(PYTHON_INTERPRETER) -m pip
 WD = $(shell pwd)
 PYTHONPATH = ${WD}
 SHELL := /bin/bash
-
-
 
 ## define our activate venv command 
 define activate_venv
@@ -30,9 +27,6 @@ install-requirements: create-virtual-environment
     @echo ">>> Finished installing requirements <<<"
 
 
-
-
-
 ## Install bandit for security checks
 bandit:
     $(call activate_venv, $(PIP) install bandit)
@@ -47,9 +41,6 @@ coverage:
 
 ## Set up dev requirements (bandit, black & coverage)
 dev-setup: create-virtual-environment bandit black coverage
-
-
-
 
 
 ## Run the security test (bandit) on all directories and the parent directory
