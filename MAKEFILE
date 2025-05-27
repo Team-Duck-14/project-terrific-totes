@@ -68,4 +68,4 @@ unit-test:
 check-coverage:
     $(call activate_venv, PYTHONPATH=${PYTHONPATH} pytest --cov=src test/)
 
-run-all: install-requirements security-test run-black unit-test check-coverage 
+run-all: install-requirements security-test run-black unit-test check-coverage
