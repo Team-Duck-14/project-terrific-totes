@@ -8,7 +8,7 @@ SHELL := /bin/bash
 
 
 
-## define our activate venv command
+## define our activate venv command 
 define activate_venv
     source venv/bin/activate && $1
 endef
