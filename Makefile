@@ -5,7 +5,7 @@ WD = $(shell pwd)
 PYTHONPATH = ${WD}
 SHELL := /bin/bash
 
-## define our activate venv command 
+## define our activate venv command
 define activate_venv
     source venv/bin/activate && $1
 endef
@@ -15,17 +15,14 @@ create-virtual-environment:
 	$(PYTHON_INTERPRETER) -m venv venv
 	@echo ">>> Setting up the virtualEnv was completed"
 
-install-requirements: create-virtual-environment
-	@echo ">>> Installing requirements <<<"
-
 ## 'call' is used as we're working in a shell, need to activate venv with each entry
 ## adding, but may not use
-	$(call activate_venv, $(PIP) install pip-tools)
-
 ## requirements.in are more flexible, we may not need this flexibility, yet: $(call activate_venv, pip-compile requirements.in)
-	$(call activate_venv $(PIP) install -r ./requirements.txt)
+install-requirements: create-virtual-environment
+	@echo ">>> Installing requirements <<<"
+	$(call activate_venv, $(PIP) install pip-tools)
+	$(call activate_venv, $(PIP) install -r ./requirements.txt)
 	@echo ">>> Finished installing requirements <<<"
-
 
 ## Install bandit for security checks
 bandit:
@@ -40,7 +37,7 @@ coverage:
 	$(call activate_venv, $(PIP) install pytest-cov)
 
 ## Set up dev requirements (bandit, black & coverage)
-dev-setup: 
+dev-setup:
 	create-virtual-environment
 #bandit black coverage
 
@@ -61,5 +58,5 @@ unit-test:
 check-coverage:
 	$(call activate_venv, PYTHONPATH=${PYTHONPATH} pytest --cov=src test/)
 
-run-all: 
+run-all:
 	install-requirements security-test run-black unit-test check-coverage
