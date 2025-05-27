@@ -1,0 +1,8 @@
+boto3
+botocore
+moto
+dotenv
+fastapi
+pg8000
+pytest
+uvicorn
