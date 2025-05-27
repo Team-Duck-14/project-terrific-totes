@@ -37,10 +37,7 @@ coverage:
 	$(call activate_venv, $(PIP) install pytest-cov)
 
 ## Set up dev requirements (bandit, black & coverage)
-dev-setup:
-	create-virtual-environment
-#bandit black coverage
-
+dev-setup: create-virtual-environment bandit black coverage
 
 ## Run the security test (bandit) on all directories and the parent directory
 security-test:
@@ -58,5 +55,4 @@ unit-test:
 check-coverage:
 	$(call activate_venv, PYTHONPATH=${PYTHONPATH} pytest --cov=src test/)
 
-run-all:
-	install-requirements security-test run-black unit-test check-coverage
+run-all: install-requirements security-test run-black unit-test check-coverage
