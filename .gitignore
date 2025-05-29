@@ -7,3 +7,4 @@ terraform/.terraform/providers
 *.tfstate.backup.terraform/
 **/.terraform*
 terraform.tfstate
+.env
