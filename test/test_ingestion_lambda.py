@@ -6,10 +6,10 @@ def test_lambda_handler_success():
     event = {}
     context = {}
 
-    # mock the database connection
+    # """mock the database connection
     # Instead of making a real DB connection, mock_connect will be a mock
     # When the code calls pg8000.native.Connection(...), it will get mock_conn (a mock object) instead
-    # When your code calls mock_conn.cursor(), it will return mock_cursor (another mock).
+    # When your code calls mock_conn.cursor(), it will return mock_cursor (another mock)."""
     with patch("src.ingestion_lambda_handler.pg8000.native.Connection") as mock_connect:
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
