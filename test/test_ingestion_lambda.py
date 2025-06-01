@@ -35,4 +35,4 @@ def test_lambda_handler_success():
             response = lambda_handler(event, context)
 
             assert response['statusCode'] == 200
-            assert response['body'] == 'Uploaded 11 tables to S3 totesys-ingestion-bucket'
+            assert response['body'] == 'Uploaded 11 tables to S3 project-totesys-ingestion-bucket'

@@ -12,7 +12,7 @@ data "aws_iam_policy_document" "step_function_trust_policy" {
 
 
 resource "aws_iam_role" "step_function_role" {
-  name = "step-function-role"
+  name = "project-step-function-role"
   assume_role_policy = data.aws_iam_policy_document.step_function_trust_policy.json
 }
 
@@ -66,7 +66,7 @@ resource "aws_iam_policy_attachment" "step_function_lambda_access" {
 
 resource "aws_sfn_state_machine" "step_function" {
     name = "step-function"
-    role_arn = "aws_iam_role.step_function_role.arn"
+    role_arn = aws_iam_role.step_function_role.arn
 
     definition = jsonencode({
         "StartAt" : "CallLambda",

@@ -18,7 +18,7 @@ data "aws_iam_policy_document" "cloudwatch_permissions" {
 // Create CloudWatch policy from document
 resource "aws_iam_policy" "cloudwatch_policy" {
     name = "cloudwatch-policy-${var.ingestion_lambda_name}"
-    policy = data.aws_iam_policy_document.cloudwatch_policy.json
+    policy = data.aws_iam_policy_document.cloudwatch_permissions.json
 }
 
 // Attach the CW policy to lambda role

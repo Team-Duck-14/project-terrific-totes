@@ -12,7 +12,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 
 
-BUCKET = "totesys-ingestion-bucket"
+BUCKET = "project-totesys-ingestion-bucket"
 # Initialize the S3 client outside of the handler
 s3_client = boto3.client('s3')
 

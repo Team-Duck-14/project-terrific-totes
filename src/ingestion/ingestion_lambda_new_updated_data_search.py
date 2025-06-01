@@ -5,7 +5,7 @@ from botocore import exceptions
 import datetime
 import pandas as pd
 import io
-BUCKET = "totesys-ingestion-bucket"
+BUCKET = "project-totesys-ingestion-bucket"
 TABLES = ["counterparty", "currency", "department", "design", "staff", "sales_order", "address", "payment", "purchase_order", "payment_type", "transaction"]
 
 # Initialize the S3 client outside of the handler
