@@ -1,4 +1,4 @@
-from src.ingestion_lambda_handler import lambda_handler
+from src.ingestion.ingestion_lambda_handler import lambda_handler
 from unittest.mock import patch, MagicMock
 
 def test_lambda_handler_success():
@@ -10,7 +10,7 @@ def test_lambda_handler_success():
     # Instead of making a real DB connection, mock_connect will be a mock
     # When the code calls pg8000.native.Connection(...), it will get mock_conn (a mock object) instead
     # When your code calls mock_conn.cursor(), it will return mock_cursor (another mock).
-    with patch("src.ingestion_lambda_handler.pg8000.native.Connection") as mock_connect:
+    with patch("src.ingestion.ingestion_lambda_handler.pg8000.native.Connection") as mock_connect:
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
         mock_connect.return_value = mock_conn
@@ -29,7 +29,7 @@ def test_lambda_handler_success():
         # This replaces the real S3 client with a mock so no real AWS call happens.
         # The mock put_object returns a fake response that looks like a successful upload with HTTP status 200.
 
-        with patch("src.ingestion_lambda_handler.s3_client") as mock_s3:
+        with patch("src.ingestion.ingestion_lambda_handler.s3_client") as mock_s3:
             mock_s3.put_object = MagicMock(return_value={"ResponseMetadata": {"HTTPStatusCode": 200}})
 
             response = lambda_handler(event, context)
