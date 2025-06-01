@@ -18,7 +18,7 @@ resource "aws_iam_role" "step_function_role" {
 
 
 resource "aws_iam_policy" "step_function_lambda_invoke_policy" {
-  name        = "step-function-lambda-invoke-policy"
+  name        = "project-step-function-lambda-invoke-policy"
   policy = jsonencode({
     Version = "2012-10-17",
     Statement = [
@@ -65,7 +65,7 @@ resource "aws_iam_policy_attachment" "step_function_lambda_access" {
 #}
 
 resource "aws_sfn_state_machine" "step_function" {
-    name = "step-function"
+    name = "project-step-function"
     role_arn = aws_iam_role.step_function_role.arn
 
     definition = jsonencode({
