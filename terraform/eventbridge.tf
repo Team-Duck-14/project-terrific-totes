@@ -1,6 +1,6 @@
 //iam role - with trust policy attached so it can assume the role
 resource "aws_iam_role" "eventbridge_role" {
-  name        = "project-eventbridge-role"
+  name               = "project-eventbridge-role"
   assume_role_policy = data.aws_iam_policy_document.trust_policy.json
 }
 
@@ -27,7 +27,7 @@ resource "aws_cloudwatch_event_target" "target" {
 //eventbridge rule
 resource "aws_cloudwatch_event_rule" "eventbridge_rule" {
   name                = "trigger-step-function-every-30-minutes"
-  schedule_expression  = "rate(30 minutes)"
+  schedule_expression = "rate(30 minutes)"
 }
 
 

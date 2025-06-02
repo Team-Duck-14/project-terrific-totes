@@ -14,14 +14,14 @@ data "aws_iam_policy_document" "lambda_trust_policy" {
 //iam role - with trust policy attached so it can assume the role
 //the worker
 resource "aws_iam_role" "lambda_role" {
-  name = "project-lambda-role"
+  name               = "project-lambda-role"
   assume_role_policy = data.aws_iam_policy_document.lambda_trust_policy.json
 }
 //iam s3 full access policy
 //badge with permissions
 //reusable set of permissions
 resource "aws_iam_policy" "s3_full_access_policy" {
-  name        = "project-s3-full-access-policy"
+  name = "project-s3-full-access-policy"
   policy = jsonencode({
     Version = "2012-10-17",
     Statement = [
