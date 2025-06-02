@@ -44,7 +44,6 @@ def look_for_totesys_updates(conn, s3_client):
     window = 30
     time_db_last_accessed = datetime.now() - timedelta(minutes = window)
     ingested_tables = []
-    demo_timestamp = datetime(2023,11,3,14,20,52,186)
     time_ingested = datetime.utcnow().strftime("%Y-%m-%d%H-%M-%S-%f") # formats it as a string like "2025-05-29-12-00-00"
 
     try:
@@ -53,7 +52,7 @@ def look_for_totesys_updates(conn, s3_client):
             demo_timestamp = datetime(2000,11,3,14,20,52,186)
             
             # Get new or updated values from ToteSys
-            new_or_updated_entries = conn.run(f"SELECT * FROM {table} WHERE created_at >= :demo_timestamp OR last_updated >= :demo_timestamp", demo_timestamp = demo_timestamp)
+            new_or_updated_entries = conn.run(f"SELECT * FROM {table} WHERE created_at >= :time_ingested OR last_updated >= :time_ingested", time_ingested = time_db_last_accessed)
             columns = [col['name'] for col in conn.columns]
             df = pd.DataFrame(new_or_updated_entries, columns= columns)
 
@@ -61,7 +60,7 @@ def look_for_totesys_updates(conn, s3_client):
 
             # add new values to S3
             response = s3_client.put_object(
-                Bucket=BUCKE,
+                Bucket=BUCKET,
                 Key= f"{time_ingested}/{table}.csv",
                 Body= df.to_csv(index=False)
             )
