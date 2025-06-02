@@ -1,7 +1,7 @@
 resource "aws_lambda_function" "ingestion_lambda" {
   function_name = var.ingestion_lambda_name
   role          = aws_iam_role.lambda_role.arn
-  s3_bucket     = "project-totesys-ingestion-bucket"
+  s3_bucket     = var.ingestion_bucket_name
   s3_key        = "lambda/ingestion/lambda.zip"
   handler       = "ingestion_lambda_handler.lambda_handler"
   runtime       = "python3.11"
@@ -24,6 +24,6 @@ resource "aws_lambda_function" "ingestion_lambda" {
 resource "aws_lambda_layer_version" "common_layer" {
   layer_name          = "common-layer"
   compatible_runtimes = ["python3.11"]
-  s3_bucket           = "project-totesys-ingestion-bucket"
+  s3_bucket           = var.ingestion_bucket_name
   s3_key              = "lambda/layers/layer.zip"
 }
