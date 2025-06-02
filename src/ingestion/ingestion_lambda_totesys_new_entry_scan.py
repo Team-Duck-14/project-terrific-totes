@@ -61,11 +61,10 @@ def look_for_totesys_updates(conn, s3_client):
 
             # add new values to S3
             response = s3_client.put_object(
-                Bucket=BUCKET,
+                Bucket=BUCKE,
                 Key= f"{time_ingested}/{table}.csv",
                 Body= df.to_csv(index=False)
             )
-
 
         logger.info("Successfully added new values from ToteSys to S3")
         return response

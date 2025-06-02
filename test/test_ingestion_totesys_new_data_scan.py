@@ -1,4 +1,4 @@
-from src.ingestion.ingestion_totesys_new_data_scan import look_for_totesys_updates
+from src.ingestion.ingestion_lambda_totesys_new_entry_scan import look_for_totesys_updates
 from src.ingestion.ingestion_lambda_handler import lambda_handler
 import pytest
 import pg8000
@@ -19,6 +19,14 @@ HOST = os.environ["TOTESYS_HOST"]
 DATABASE = os.environ["TOTESYS_DATABASE"]
 PORT = os.environ["TOTESYS_PORT"]
 
+@pytest.fixture()
+def mock_aws_credentials():
+    # dummy environment variables
+    os.environ["AWS_SECRET_ACCESS_KEY"] = "testing"
+    os.environ["AWS_SECURITY_TOKEN"] = "testing"
+    os.environ["AWS_SESSION_TOKEN"] = "testing"
+    os.environ["AWS_DEFAULT_REGION"] = "eu-west-2"
+
 @pytest.fixture
 def conn():
     return pg8000.native.Connection(
@@ -30,25 +38,21 @@ def conn():
             )
 
 @pytest.fixture
-@mock_aws
-def s3_client():
-    client = boto3.client('s3', region_name = "eu-west-2")
-    client.create_bucket(Bucket="totesy-ingestion-bucket",
-                         CreateBucketConfiguration={
-        'LocationConstraint': 'eu-west-2'
-    })
-    return client
+def s3_mock(mock_aws_credentials):
+    with mock_aws():
+        yield
 
-@mock_aws
-def test_totesys_gets_data_from_totesys(conn, s3_client):
-    client = s3_client
+
+def test_totesys_gets_data_from_totesys(conn, s3_mock):
+
+    client = boto3.client("s3", region_name="eu-west-2")
     response = look_for_totesys_updates(conn, client)
     # not empty data from first table
     assert len(response[0]) > 0
 
-@mock_aws
-def test_totesys_get_only_new_data(conn, s3_client):
-    client = s3_client
+
+def test_totesys_get_only_new_data(conn, s3_mock):
+    client = boto3.client("s3", region_name="eu-west-2")
     response = look_for_totesys_updates(conn, client)
     demo_timestamp = datetime.datetime(2000,11,3,14,20,52,186)
 
@@ -57,7 +61,18 @@ def test_totesys_get_only_new_data(conn, s3_client):
             assert i >= demo_timestamp
         for i in table.loc[:,"last_updated"]:
             assert i >= demo_timestamp
+            
 
-def test_totesys_puts_new_data_in_s3_bucket(conn, s3_client):
-    response = look_for_totesys_updates(conn, s3_client)
-    print(response)
+def test_totesys_puts_new_data_in_s3_bucket(conn, s3_mock):
+    client = boto3.client("s3", region_name="eu-west-2")
+    client.create_bucket(Bucket = "totesys-ingestion-bucket",
+                         CreateBucketConfiguration={
+    'LocationConstraint': 'eu-west-2'})
+
+    response = look_for_totesys_updates(conn, client)
+    assert response['HTTPSStatusCode'] == 200
+
+def test_totesys_scan_returns_error(conn, s3_mock):
+
+    with pytest.raises(Exception):
+        look_for_totesys_updates(conn, s3_mock)
