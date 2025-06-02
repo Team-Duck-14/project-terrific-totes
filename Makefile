@@ -45,7 +45,7 @@ security-test:
 
 ## Run the black code check
 run-black:
-	$(call activate_venv, black ./src/*.py ./test/*.py  ./utility/*.py)
+	$(call activate_venv, black ./src ./test ./utility)
 
 ## Run the unit tests
 unit-test:

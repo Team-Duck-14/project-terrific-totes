@@ -8,3 +8,5 @@ terraform/.terraform/providers
 **/.terraform*
 terraform.tfstate
 .env
+terraform.tfvars
+*.zip
