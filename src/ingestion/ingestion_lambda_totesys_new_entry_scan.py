@@ -64,9 +64,9 @@ def look_for_totesys_updates(conn, s3_client):
                 Key= f"{time_ingested}/{table}.csv",
                 Body= df.to_csv(index=False)
             )
-
-        logger.info("Successfully added new values from ToteSys to S3")
-        return response
+            logger.info(f"Successfully added new values from {table} to S3")
+        
+        return {"Status Code": 200, "body": f"Uploaded {len(TABLES)} tables to S3 {BUCKET}"}
     
     except Exception as e:
             logger.error(f"Error processing values: {str(e)}")

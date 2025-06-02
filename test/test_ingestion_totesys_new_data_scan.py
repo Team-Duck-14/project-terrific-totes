@@ -1,23 +1,14 @@
 from src.ingestion.ingestion_lambda_totesys_new_entry_scan import look_for_totesys_updates
 from src.ingestion.ingestion_lambda_handler import lambda_handler
+
 import pytest
+from unittest.mock import patch, MagicMock
 import pg8000
 import os
+import datetime
 import boto3
 from moto import mock_aws
 from dotenv import load_dotenv
-import datetime
-
-# Load environment variables
-load_dotenv()
-
-# ENV VARIABLES SET
-COHORT_ID = os.environ["TOTESYS_COHORT_ID"]
-USER = os.environ["TOTESYS_USER"]
-PASSWORD = os.environ["TOTESYS_PASSWORD"]
-HOST = os.environ["TOTESYS_HOST"]
-DATABASE = os.environ["TOTESYS_DATABASE"]
-PORT = os.environ["TOTESYS_PORT"]
 
 @pytest.fixture()
 def mock_aws_credentials():
@@ -45,6 +36,25 @@ def s3_mock(mock_aws_credentials):
 @pytest.mark.skip(reason="passed, but now fails because function was build up with TDD")
 def test_totesys_gets_data_from_totesys(conn, s3_mock):
 
+    # # mock the database connection
+    # # Instead of making a real DB connection, mock_connect will be a mock
+    # # When the code calls pg8000.native.Connection(...), it will get mock_conn (a mock object) instead
+    # # When your code calls mock_conn.cursor(), it will return mock_cursor (another mock).
+    # with patch("src.ingestion.ingestion_lambda_totesys_new_entry_scan.pg8000.native.Connection") as mock_connect:
+    #     mock_conn = MagicMock()
+    #     mock_cursor = MagicMock()
+    #     mock_connect.return_value = mock_conn
+    #     mock_conn.cursor.return_value = mock_cursor
+
+
+    #     # Mock the database query result
+    #     # When your code runs a SQL query and calls fetchall(), it will get back this mock data (two tuples).
+    #     # This simulates the database returning two rows of data.
+    #     mock_cursor.fetchall.return_value = [
+    #         ("row1_col1", "row1_col2"),
+    #         ("row2_col1", "row2_col2"),
+    #     ]
+
     client = boto3.client("s3", region_name="eu-west-2")
     response = look_for_totesys_updates(conn, client)
     # not empty data from first table
@@ -70,7 +80,7 @@ def test_totesys_puts_new_data_in_s3_bucket(conn, s3_mock):
     'LocationConstraint': 'eu-west-2'})
 
     response = look_for_totesys_updates(conn, client)
-    assert response['HTTPSStatusCode'] == 200
+    assert response == {"Status Code": 200, "body": f"Uploaded 11 tables to S3 totesys-ingestion-bucket"}
 
 @pytest.mark.skip(reason="passed, but now fails because we broke the function in order to test")
 def test_totesys_scan_returns_error(conn, s3_mock):
