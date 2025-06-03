@@ -12,7 +12,7 @@ import pandas as pd
 from datetime import datetime
 from dotenv import load_dotenv
 
-
+from src.ingestion.ingestion_lambda_totesys_new_entry_scan import look_for_totesys_updates
 
 BUCKET = "project-totesys-ingestion-bucket"
 # Initialize the S3 client outside of the handler
@@ -37,24 +37,7 @@ TABLES = ["counterparty", "currency", "department", "design", "staff", "sales_or
 
 def lambda_handler(event, context):
     
-    # Has initial ingest already happened?
-    """Looks in S3 ingest bucket for .txt file added after initial ingest, if no file exists, initial ingest is run"""
-    try:
-        ingest_marker = s3_client.get_object(
-                        Bucket="project-totesys-ingestion-bucket",
-                        Key='Initial_Ingest_Marker.txt'
-                        )
-    # no ingest marker
-    except ClientError as e:
-        if e.response['Error']['Code'] == "NoSuchKey":
-            ingest_marker = False
-
-    if not ingest_marker:
-        try:
-            # Initial ingest
-            timestamp = datetime.utcnow().strftime("%Y-%m-%d_%H-%M-%S") # formats it as a string like "2025-05-29-12-00-00"
-
-            conn = pg8000.native.Connection(
+    conn = pg8000.native.Connection(
                 # cohort_id=COHORT_ID,
                 user=USER,
                 password=PASSWORD,
@@ -62,6 +45,30 @@ def lambda_handler(event, context):
                 database=DATABASE,
                 port=PORT
             )
+    
+    # Has initial ingest already happened?
+    """Looks in S3 ingest bucket for .txt file added after initial ingest, if no file exists, initial ingest is run"""
+    try:
+        ingest_marker = s3_client.get_object(
+                        Bucket="project-totesys-ingestion-bucket",
+                        Key='Initial_Ingest_Marker.txt'
+                        )
+    
+        # scan ToteSys for new data and add to S3
+        """If initial ingest has happened, data is scanned for updates or additions"""
+        look_for_totesys_updates(conn, s3_client)
+
+    # no ingest marker
+    except ClientError as e:
+        if e.response['Error']['Code'] == "NoSuchKey":
+            ingest_marker = False
+    
+    # If ToteSys hasn't been ingested, perform initial ingest
+    if not ingest_marker:
+        try:
+            # Initial ingest
+            timestamp = datetime.utcnow().strftime("%Y-%m-%d_%H-%M-%S") # formats it as a string like "2025-05-29-12-00-00"
+
             for table in TABLES:
                 rows = conn.run(f"SELECT * FROM {table}")
                 columns = [col['name'] for col in conn.columns]
