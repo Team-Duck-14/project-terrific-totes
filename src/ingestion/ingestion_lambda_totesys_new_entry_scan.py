@@ -38,25 +38,26 @@ def conn():
             port = PORT
             )
 
-
 def look_for_totesys_updates(conn, s3_client):
     
     window = 30
     time_db_last_accessed = datetime.now() - timedelta(minutes = window)
-    ingested_tables = []
     time_ingested = datetime.utcnow().strftime("%Y-%m-%d%H-%M-%S-%f") # formats it as a string like "2025-05-29-12-00-00"
-
+    
+    # Uncomment to test DB connection and SQL query
+    ingested_tables = []
+    
     try:
         for table in TABLES:
-
-            demo_timestamp = datetime(2000,11,3,14,20,52,186)
             
-            # Get new or updated values from ToteSys
+            # USE for testing SQL query selects only entries after demo_timestamp
+            # demo_timestamp = datetime(2000,11,3,14,20,52,186)
+            
+            # REPLACE :time_ingested with demo_timestamp to for testing
+            # Get new or updated values from ToteSys with SQL query
             new_or_updated_entries = conn.run(f"SELECT * FROM {table} WHERE created_at >= :time_ingested OR last_updated >= :time_ingested", time_ingested = time_db_last_accessed)
-            columns = [col['name'] for col in conn.columns]
-            df = pd.DataFrame(new_or_updated_entries, columns= columns)
-
-            ingested_tables.append(df)
+            column_names = [col['name'] for col in conn.columns]
+            df = pd.DataFrame(new_or_updated_entries, columns= column_names)
 
             # add new values to S3
             response = s3_client.put_object(
@@ -64,8 +65,15 @@ def look_for_totesys_updates(conn, s3_client):
                 Key= f"{time_ingested}/{table}.csv",
                 Body= df.to_csv(index=False)
             )
+            
             logger.info(f"Successfully added new values from {table} to S3")
-        
+
+            # UNCOMMENT TO TEST DB CONNECTION AND SQL QUERY FOR SELECTING NEW DATA
+            # ingested_tables.append(df)
+            
+        # UNCOMMENT TO TEST DB CONNECTION AND SQL QUERY
+        # return ingested_tables
+
         return {"Status Code": 200, "body": f"Uploaded {len(TABLES)} tables to S3 {BUCKET}"}
     
     except Exception as e:

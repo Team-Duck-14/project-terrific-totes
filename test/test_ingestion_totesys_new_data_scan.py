@@ -18,14 +18,16 @@ def mock_aws_credentials():
     os.environ["AWS_SESSION_TOKEN"] = "testing"
     os.environ["AWS_DEFAULT_REGION"] = "eu-west-2"
 
+load_dotenv()
+@pytest.mark.skip(reason="github actions machine has no access to ToteSys credentials")
 @pytest.fixture
 def conn():
     return pg8000.native.Connection(
-            user = USER,
-            password = PASSWORD,
-            host = HOST,
-            database = DATABASE,
-            port = PORT
+            user = os.environ['TOTESYS_USER'],
+            password = os.environ['TOTESYS_PASSWORD'],
+            host = os.environ['TOTESYS_HOST'],
+            database = os.environ['TOTESYS_DATABASE'],
+            port = os.environ['TOTESYS_PORT']
             )
 
 @pytest.fixture
@@ -36,28 +38,11 @@ def s3_mock(mock_aws_credentials):
 @pytest.mark.skip(reason="passed, but now fails because function was build up with TDD")
 def test_totesys_gets_data_from_totesys(conn, s3_mock):
 
-    # # mock the database connection
-    # # Instead of making a real DB connection, mock_connect will be a mock
-    # # When the code calls pg8000.native.Connection(...), it will get mock_conn (a mock object) instead
-    # # When your code calls mock_conn.cursor(), it will return mock_cursor (another mock).
-    # with patch("src.ingestion.ingestion_lambda_totesys_new_entry_scan.pg8000.native.Connection") as mock_connect:
-    #     mock_conn = MagicMock()
-    #     mock_cursor = MagicMock()
-    #     mock_connect.return_value = mock_conn
-    #     mock_conn.cursor.return_value = mock_cursor
-
-
-    #     # Mock the database query result
-    #     # When your code runs a SQL query and calls fetchall(), it will get back this mock data (two tuples).
-    #     # This simulates the database returning two rows of data.
-    #     mock_cursor.fetchall.return_value = [
-    #         ("row1_col1", "row1_col2"),
-    #         ("row2_col1", "row2_col2"),
-    #     ]
-
     client = boto3.client("s3", region_name="eu-west-2")
+
     response = look_for_totesys_updates(conn, client)
-    # not empty data from first table
+    
+    # assert data from ToteSys is ingested into first table
     assert len(response[0]) > 0
 
 @pytest.mark.skip(reason="passed, but now fails because function was build up with TDD")
@@ -66,13 +51,14 @@ def test_totesys_get_only_new_data(conn, s3_mock):
     response = look_for_totesys_updates(conn, client)
     demo_timestamp = datetime.datetime(2000,11,3,14,20,52,186)
 
+    # check only data that is fresher than demo_timestamp has been ingested
     for table in response:
         for i in table.loc[:,"created_at"]:
             assert i >= demo_timestamp
         for i in table.loc[:,"last_updated"]:
             assert i >= demo_timestamp
-            
 
+@pytest.mark.skip(reason="github actions machine has no access to ToteSys credentials")         
 def test_totesys_puts_new_data_in_s3_bucket(conn, s3_mock):
     client = boto3.client("s3", region_name="eu-west-2")
     client.create_bucket(Bucket = "totesys-ingestion-bucket",
