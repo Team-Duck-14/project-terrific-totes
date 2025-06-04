@@ -3,7 +3,7 @@ resource "aws_lambda_function" "ingestion_lambda" {
   role          = aws_iam_role.lambda_role.arn
   s3_bucket     = var.ingestion_bucket_name
   s3_key        = "lambda/ingestion/lambda.zip"
-  handler       = "ingestion_lambda_handler.lambda_handler"
+  handler       = "src.ingestion.ingestion_lambda_handler.lambda_handler"
   runtime       = "python3.11"
   timeout       = 60
   layers = [aws_lambda_layer_version.common_layer.arn,                    # custom layer with pg8000
