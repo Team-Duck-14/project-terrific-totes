@@ -75,7 +75,7 @@ def lambda_handler(event, context):
     if not ingest_marker:
         try:
             # Initial ingest
-            timestamp = datetime.utcnow().strftime("%Y-%m-%d_%H-%M-%S") # formats it as a string like "2025-05-29-12-00-00"
+            timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S") # formats it as a string like "2025-05-29-12-00-00"
 
             for table in TABLES:
                 rows = conn.run(f"SELECT * FROM {table}")

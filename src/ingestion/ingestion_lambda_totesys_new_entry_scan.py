@@ -42,7 +42,7 @@ def look_for_totesys_updates(conn, s3_client):
     
     window = 30
     time_db_last_accessed = datetime.now() - timedelta(minutes = window)
-    time_ingested = datetime.utcnow().strftime("%Y-%m-%d%H-%M-%S-%f") # formats it as a string like "2025-05-29-12-00-00"
+    time_ingested = datetime.now().strftime("%Y-%m-%d_%H-%M-%S") # formats it as a string like "2025-05-29-12-00-00"
     
     # Uncomment to test DB connection and SQL query
     ingested_tables = []
