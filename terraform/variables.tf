@@ -7,6 +7,12 @@ variable "ingestion_lambda_name" {
 variable "ingestion_bucket_name" {
   default = "project-totesys-ingestion-bucket"
 }
+
+variable "processed_bucket_name" {
+  default = "project-totesys-processed-bucket"
+}
+
+
 variable "cohort_id" {
   description = "TOTESYS cohort ID"
   type        = string
