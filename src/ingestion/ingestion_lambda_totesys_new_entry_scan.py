@@ -74,7 +74,7 @@ def look_for_totesys_updates(conn, s3_client):
         # UNCOMMENT TO TEST DB CONNECTION AND SQL QUERY
         # return ingested_tables
 
-        return {"Status Code": 200, "body": f"Uploaded {len(TABLES)} tables to S3 {BUCKET}"}
+        return {"Status Code": 200, "body": f"Uploaded new or updated values for {len(TABLES)} tables to S3 {BUCKET}"}
     
     except Exception as e:
             logger.error(f"Error processing values: {str(e)}")
