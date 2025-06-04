@@ -12,7 +12,7 @@ import pandas as pd
 from datetime import datetime
 from dotenv import load_dotenv
 
-from ingestion_lambda_totesys_new_entry_scan import look_for_totesys_updates
+from .ingestion_lambda_totesys_new_entry_scan import look_for_totesys_updates
 
 BUCKET = "project-totesys-ingestion-bucket"
 # Initialize the S3 client outside of the handler
