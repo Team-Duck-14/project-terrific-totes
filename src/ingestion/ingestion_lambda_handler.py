@@ -12,7 +12,7 @@ import pandas as pd
 from datetime import datetime
 from dotenv import load_dotenv
 
-from src.ingestion.ingestion_lambda_totesys_new_entry_scan import look_for_totesys_updates
+from ingestion_lambda_totesys_new_entry_scan import look_for_totesys_updates
 
 BUCKET = "project-totesys-ingestion-bucket"
 # Initialize the S3 client outside of the handler
@@ -38,7 +38,6 @@ TABLES = ["counterparty", "currency", "department", "design", "staff", "sales_or
 def lambda_handler(event, context):
     
     conn = pg8000.native.Connection(
-                cohort_id=COHORT_ID,
                 user=USER,
                 password=PASSWORD,
                 host=HOST,
