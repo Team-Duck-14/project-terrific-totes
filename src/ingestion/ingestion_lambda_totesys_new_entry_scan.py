@@ -7,7 +7,7 @@ import os
 from datetime import datetime, timedelta
 import pandas as pd
 
-BUCKET = "totesys-ingestion-bucket"
+BUCKET = "project-totesys-ingestion-bucket"
 TABLES = ["counterparty", "currency", "department", "design", "staff", "sales_order", "address", "payment", "purchase_order", "payment_type", "transaction"]
 
 # Load environment variables
