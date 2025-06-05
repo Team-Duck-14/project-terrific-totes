@@ -1,5 +1,5 @@
 CREATE TABLE dim_counterparty (
-    counterparty_id INT PRIMARY KEY NOT NULL,
+    counterparty_id INT PRIMARY KEY,
     counterparty_legal_name VARCHAR(100) NOT NULL,
     counterparty_legal_address_line_1 VARCHAR(100) NOT NULL,
     counterparty_legal_address_line_2 VARCHAR(100),
