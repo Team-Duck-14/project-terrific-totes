@@ -56,7 +56,11 @@ def lambda_handler(event, context):
         # scan ToteSys for new data and add to S3
         # Return success response here after updates are checked
         """If initial ingest has happened, ToteSys is scanned for updates or additions, returning status 200 and success message"""
-        return look_for_totesys_updates(conn, s3_client)
+        look_for_totesys_updates(conn, s3_client)
+        return {
+            "statusCode": 200,
+            "body": "Checked for ToteSys updates and uploaded changes to S3"
+        }
 
 
     # no ingest marker
