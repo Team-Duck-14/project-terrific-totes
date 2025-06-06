@@ -29,22 +29,22 @@ s3_client = boto3.client('s3')
 logger = logging.getLogger()
 logger.setLevel("INFO")
 
-# Conect to ToteSys
-conn =  pg8000.native.Connection(
-                user = USER,
-                password = PASSWORD,
-                host = HOST,
-                database = DATABASE,
-                port = PORT
-                )
+# Conection to ToteSys
+# conn =  pg8000.native.Connection(
+#                 user = USER,
+#                 password = PASSWORD,
+#                 host = HOST,
+#                 database = DATABASE,
+#                 port = PORT
+#                 )
 
 def look_for_totesys_updates(conn, s3_client):
 
     """Parses ToteSys tables, selects entries created or updated in the last 30 minutes, adds these to new dataframe and stored in S3 ingestion.
-    To change timeframe for new entries, change value of window. To test with any timeframe, use variable demo_timestamp in place of time_ingested"""
+    To change timeframe for new entries, change value of window. To test with any timeframe, use variable demo_timestamp in place of :cutoff_point"""
     
     window = 30
-    time_db_last_accessed = datetime.now() - timedelta(minutes = window)
+    cutoff_timestamp = datetime.now() - timedelta(minutes = window)
     time_ingested = datetime.now().strftime("%Y-%m-%d_%H-%M-%S") # formats it as a string like "2025-05-29-12-00-00"
     
     # UNCOMMENT for testing
@@ -55,7 +55,7 @@ def look_for_totesys_updates(conn, s3_client):
             # demo_timestamp = datetime(2000,11,3,14,20,52,186)
 
             # Get new or updated values from ToteSys with SQL query
-            new_or_updated_entries = conn.run(f"SELECT * FROM {table} WHERE created_at >= :time_ingested OR last_updated >= :time_ingested", time_ingested = time_ingested)
+            new_or_updated_entries = conn.run(f"SELECT * FROM {table} WHERE created_at >= :cutoff_timestamp OR last_updated >= :cutoff_timestamp", cutoff_timestamp = cutoff_timestamp)
             
             # if new entries have been found, write to S3 ingest
             if len(new_or_updated_entries) > 0:

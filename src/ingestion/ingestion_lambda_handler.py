@@ -45,7 +45,6 @@ def lambda_handler(event, context):
                 port=PORT
             )
     
-    # Has initial ingest already happened?
     """Looks in S3 ingest bucket for .txt file added after initial ingest, if no file exists, initial ingest is run"""
     try:
         ingest_marker = s3_client.get_object(
@@ -54,8 +53,6 @@ def lambda_handler(event, context):
                         )
     
         # scan ToteSys for new data and add to S3
-        # Return success response here after updates are checked
-        """If initial ingest has happened, ToteSys is scanned for updates or additions, returning status 200 and success message"""
         look_for_totesys_updates(conn, s3_client)
         return {
             "statusCode": 200,
