@@ -2,6 +2,11 @@
 
 import boto3
 from botocore.exceptions import ClientError
+import logging
+
+# Initialize logger
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 # Initialize the S3 client outside of the handler
 s3_client = boto3.client('s3')
@@ -16,24 +21,30 @@ def lambda_handler(event, context):
             Bucket=ingestion_bucket
         )
 
-        contents = find_objects["Contents"]
+        if "Contents" not in find_objects:
+            logger.info("No objects found in ingestion bucket.")
+            return {"statusCode": 200, "body": "No objects found."}
 
         store_objects = []
-        for content in contents:
+        for content in find_objects["Contents"]:
             extract_object = s3_client.get_object(
                 Bucket=ingestion_bucket,
                 Key=content["Key"],
             )
-            store_objects.append(extract_object["Body"])
+            store_objects.append(extract_object["Body"].read()) # read file contents
         
         return {
             "statusCode": 200,
-            "body": "objects saved to store_objects list"
+            "body": f"Retrieved {len(store_objects)} objects from S3."
         }
     
     # unable to extract object
     except ClientError as e:
-        raise e
+        logger.error(f"ClientError: {e}")
+        return {
+            "statusCode": 500,
+            "body": f"Error fetching objects: {e}"
+        }
     # # Have a look, access the body content
     # body = body_objects[0]
     # print("This is the object: ", body)
