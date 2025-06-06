@@ -54,9 +54,9 @@ def lambda_handler(event, context):
                         )
     
         # scan ToteSys for new data and add to S3
-        """If initial ingest has happened, data is scanned for updates or additions"""
-        look_for_totesys_updates(conn, s3_client)
         # Return success response here after updates are checked
+        """If initial ingest has happened, ToteSys is scanned for updates or additions, returning status 200 and success message"""
+        look_for_totesys_updates(conn, s3_client)
         return {
             "statusCode": 200,
             "body": "Checked for ToteSys updates and uploaded changes to S3"
@@ -75,7 +75,7 @@ def lambda_handler(event, context):
     if not ingest_marker:
         try:
             # Initial ingest
-            timestamp = datetime.utcnow().strftime("%Y-%m-%d_%H-%M-%S") # formats it as a string like "2025-05-29-12-00-00"
+            timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S") # formats it as a string like "2025-05-29-12-00-00"
 
             for table in TABLES:
                 rows = conn.run(f"SELECT * FROM {table}")
