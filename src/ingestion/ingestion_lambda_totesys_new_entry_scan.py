@@ -39,12 +39,14 @@ logger.setLevel("INFO")
 #                 )
 
 def look_for_totesys_updates(conn, s3_client):
+    logger.info("Running update scan for ToteSys tables")
 
     """Parses ToteSys tables, selects entries created or updated in the last 30 minutes, adds these to new dataframe and stored in S3 ingestion.
     To change timeframe for new entries, change value of window. To test with any timeframe, use variable demo_timestamp in place of :cutoff_point"""
     
     window = 30
     cutoff_timestamp = datetime.now() - timedelta(minutes = window)
+    logger.info(f"Using cutoff timestamp: {cutoff_timestamp}")
     time_ingested = datetime.now().strftime("%Y-%m-%d_%H-%M-%S") # formats it as a string like "2025-05-29-12-00-00"
     
     # UNCOMMENT for testing
@@ -52,6 +54,7 @@ def look_for_totesys_updates(conn, s3_client):
     
     try:
         for table in TABLES:
+            logger.info(f"Checking table: {table}")
             # demo_timestamp = datetime(2000,11,3,14,20,52,186)
 
             # Get new or updated values from ToteSys with SQL query

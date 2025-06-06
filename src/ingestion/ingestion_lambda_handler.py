@@ -36,6 +36,7 @@ PORT = os.environ["TOTESYS_PORT"]
 TABLES = ["counterparty", "currency", "department", "design", "staff", "sales_order", "address", "payment", "purchase_order", "payment_type", "transaction"]
 
 def lambda_handler(event, context):
+    logger.info("Lambda handler started")
     
     conn = pg8000.native.Connection(
                 user=USER,
@@ -51,6 +52,7 @@ def lambda_handler(event, context):
                         Bucket="project-totesys-ingestion-bucket",
                         Key='Initial_Ingest_Marker.txt'
                         )
+        logger.info("Ingest marker found — proceeding with update scan")
     
         # scan ToteSys for new data and add to S3
         look_for_totesys_updates(conn, s3_client)
@@ -63,8 +65,10 @@ def lambda_handler(event, context):
     # no ingest marker
     except ClientError as e:
         if e.response['Error']['Code'] == "NoSuchKey":
+            logger.info("No ingest marker found — proceeding with initial ingest")
             ingest_marker = False
         else:
+            logger.error(f"Error checking ingest marker: {e}")
             raise
 
     
@@ -73,8 +77,10 @@ def lambda_handler(event, context):
         try:
             # Initial ingest
             timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S") # formats it as a string like "2025-05-29-12-00-00"
+            logger.info(f"Starting initial ingest at {timestamp}")
 
             for table in TABLES:
+                logger.info(f"Ingesting table: {table}")
                 rows = conn.run(f"SELECT * FROM {table}")
                 columns = [col['name'] for col in conn.columns]
                 df = pd.DataFrame(rows, columns=columns)
