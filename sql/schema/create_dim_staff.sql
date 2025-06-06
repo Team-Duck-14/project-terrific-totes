@@ -24,6 +24,3 @@ SELECT DISTINCT
     staff.email_address
 FROM staff
 JOIN department ON staff.department_id = department.department_id;
-
--- 1. Create and populate dimension tables
--- 2. Create and populate fact table
