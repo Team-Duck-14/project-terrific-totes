@@ -48,14 +48,14 @@ def look_for_totesys_updates(conn, s3_client):
     time_ingested = datetime.now().strftime("%Y-%m-%d_%H-%M-%S") # formats it as a string like "2025-05-29-12-00-00"
     
     # UNCOMMENT for testing
-    ingested_tables = []
+    # ingested_tables = []
     
     try:
         for table in TABLES:
             # demo_timestamp = datetime(2000,11,3,14,20,52,186)
 
             # Get new or updated values from ToteSys with SQL query
-            new_or_updated_entries = conn.run(f"SELECT * FROM {table} WHERE created_at >= :time_ingested OR last_updated >= :time_ingested", time_ingested = demo_timestamp)
+            new_or_updated_entries = conn.run(f"SELECT * FROM {table} WHERE created_at >= :time_ingested OR last_updated >= :time_ingested", time_ingested = time_ingested)
             
             # if new entries have been found, write to S3 ingest
             if len(new_or_updated_entries) > 0:
@@ -86,6 +86,3 @@ def look_for_totesys_updates(conn, s3_client):
     finally:
             if "conn" in locals():
                 conn.close()
-
-
-look_for_totesys_updates(conn, s3_client)
