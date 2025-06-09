@@ -30,4 +30,19 @@ resource "aws_cloudwatch_event_rule" "eventbridge_rule" {
   schedule_expression = "rate(30 minutes)"
 }
 
+resource "aws_iam_role_policy" "eventbridge_start_execution_policy" {
+  name = "allow-start-step-function"
+  role = aws_iam_role.eventbridge_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = "states:StartExecution"
+        Resource = aws_sfn_state_machine.step_function.arn
+      }
+    ]
+  })
+}
 

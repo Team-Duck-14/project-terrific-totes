@@ -36,6 +36,7 @@ PORT = os.environ["TOTESYS_PORT"]
 TABLES = ["counterparty", "currency", "department", "design", "staff", "sales_order", "address", "payment", "purchase_order", "payment_type", "transaction"]
 
 def lambda_handler(event, context):
+    logger.info("Lambda handler started")
     
     conn = pg8000.native.Connection(
                 user=USER,
@@ -45,18 +46,16 @@ def lambda_handler(event, context):
                 port=PORT
             )
     
-    # Has initial ingest already happened?
     """Looks in S3 ingest bucket for .txt file added after initial ingest, if no file exists, initial ingest is run"""
     try:
         ingest_marker = s3_client.get_object(
                         Bucket="project-totesys-ingestion-bucket",
                         Key='Initial_Ingest_Marker.txt'
                         )
+        logger.info("Ingest marker found — proceeding with update scan")
     
         # scan ToteSys for new data and add to S3
-        """If initial ingest has happened, data is scanned for updates or additions"""
         look_for_totesys_updates(conn, s3_client)
-        # Return success response here after updates are checked
         return {
             "statusCode": 200,
             "body": "Checked for ToteSys updates and uploaded changes to S3"
@@ -66,8 +65,10 @@ def lambda_handler(event, context):
     # no ingest marker
     except ClientError as e:
         if e.response['Error']['Code'] == "NoSuchKey":
+            logger.info("No ingest marker found — proceeding with initial ingest")
             ingest_marker = False
         else:
+            logger.error(f"Error checking ingest marker: {e}")
             raise
 
     
@@ -75,9 +76,11 @@ def lambda_handler(event, context):
     if not ingest_marker:
         try:
             # Initial ingest
-            timestamp = datetime.utcnow().strftime("%Y-%m-%d_%H-%M-%S") # formats it as a string like "2025-05-29-12-00-00"
+            timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S") # formats it as a string like "2025-05-29-12-00-00"
+            logger.info(f"Starting initial ingest at {timestamp}")
 
             for table in TABLES:
+                logger.info(f"Ingesting table: {table}")
                 rows = conn.run(f"SELECT * FROM {table}")
                 columns = [col['name'] for col in conn.columns]
                 df = pd.DataFrame(rows, columns=columns)
