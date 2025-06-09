@@ -1,12 +1,18 @@
-# get contents of ingestion bucket
-
 import boto3
 from botocore.exceptions import ClientError
 import logging
 import pandas as pd
 import io
 import os
-from transformation.transofrmations import transform_dim_staff
+from transformations import (
+    transform_dim_staff,
+    transform_dim_counterparty,
+    transform_dim_currency,
+    transform_dim_date,
+    transform_dim_design,
+    transform_dim_location,
+    transform_fact_sales_order,
+)
 
 # Initialize logger
 logger = logging.getLogger()
@@ -22,24 +28,18 @@ def lambda_handler(event, context):
     # find the key from list_objects
     # use key for get_object
     try:
-        find_objects = s3_client.list_objects(
-            Bucket=ingestion_bucket
-        )
+        response = s3_client.list_objects(Bucket=ingestion_bucket)
 
-        if "Contents" not in find_objects:
+        if "Contents" not in response:
             logger.info("No objects found in ingestion bucket.")
-            return {"statusCode": 200, "body": "No objects found."}
+            return {"statusCode": 200, "body": "No files to process."}
 
-        processed_keys = []
-        staff_df = None
-        department_df = None
-
-        # Loop through each file in the bucket
-        for content in find_objects["Contents"]:
+        # Load all required files into a dictionary of DataFrames
+        dfs = {}
+        for content in response["Contents"]:
             key = content["Key"]
             logger.info(f"Processing file: {key}")
 
-            # Get the object from S3
             extract_object = s3_client.get_object(
                 Bucket=ingestion_bucket,
                 Key=key,
@@ -48,32 +48,59 @@ def lambda_handler(event, context):
             # Read the object content into a pandas DataFrame
             df = pd.read_csv(io.BytesIO(file_bytes))
             
-            if "staff.csv" in key:
-                staff_df = df
-            elif "department.csv" in key:
-                department_df = df
-        # Transform and save only if both tables are loaded
-        if staff_df is not None and department_df is not None:
-            dim_staff_df = transform_dim_staff(staff_df, department_df)
+            filename = os.path.basename(key).replace(".csv", "")
+            dfs[filename] = df            
+        
+        processed = []
 
-            # Save the transformed DataFrame to CSV in memory
-            csv_buffer = io.StringIO()
-            dim_staff_df.to_csv(csv_buffer, index=False)
-            # Write the transformed CSV to the processed bucket
-            s3_client.put_object(
-                Bucket=processed_bucket,
-                Key="dim_staff.csv",
-                Body=csv_buffer.getvalue()
-            )
+        # Transform and upload dim_staff
+        if "staff" in dfs and "department" in dfs:
+            dim_staff_df = transform_dim_staff(dfs["staff"], dfs["department"])
+            upload_df(dim_staff_df, "dim_staff.csv")
+            processed.append("dim_staff.csv")
 
-            logger.info(f"Successfully processed and uploaded: {key}")
-            processed_keys.append("dim_staff.csv")
-        else:
-            logger.warning("Required files (staff.csv or department.csv) not found. Skipping transformation.")
+        # Transform and upload dim_counterparty
+        if "counterparty" in dfs and "address" in dfs:
+            dim_counterparty_df = transform_dim_counterparty(dfs["counterparty"], dfs["address"])
+            upload_df(dim_counterparty_df, "dim_counterparty.csv")
+            processed.append("dim_counterparty.csv")
+
+        # Transform and upload dim_currency
+        if "currency" in dfs:
+            dim_currency_df = transform_dim_currency(dfs["currency"])
+            upload_df(dim_currency_df, "dim_currency.csv")
+            processed.append("dim_currency.csv")
+
+        # Transform and upload dim_date
+        if "sales_order" in dfs and "purchase_order" in dfs and "payment" in dfs:
+            dim_date_df = transform_dim_date(dfs["sales_order"], dfs["purchase_order"], dfs["payment"])
+            upload_df(dim_date_df, "dim_date.csv")
+            processed.append("dim_date.csv")
+
+        # Transform and upload dim_design
+        if "design" in dfs:
+            dim_design_df = transform_dim_design(dfs["design"])
+            upload_df(dim_design_df, "dim_design.csv")
+            processed.append("dim_design.csv")
+
+        # Transform and upload dim_location
+        if "address" in dfs:
+            dim_location_df = transform_dim_location(dfs["address"])
+            upload_df(dim_location_df, "dim_location.csv")
+            processed.append("dim_location.csv")
+
+        # Transform and upload fact_sales_order
+        if "sales_order" in dfs:
+            fact_sales_order_df = transform_fact_sales_order(dfs["sales_order"])
+            upload_df(fact_sales_order_df, "fact_sales_order.csv")
+            processed.append("fact_sales_order.csv")
+
+        if not processed:
+            logger.warning("No transformations applied due to missing dependencies.")
 
         return {
             "statusCode": 200,
-            "body": f"Successfully processed {len(processed_keys)} files: {processed_keys}"
+            "body": f"Successfully processed {len(processed)} files: {processed}"
         }
     
     # unable to extract object
@@ -89,3 +116,14 @@ def lambda_handler(event, context):
             "statusCode": 500,
             "body": f"Unhandled error: {e}"
         }
+    
+def upload_df(df, filename):
+    """Helper function to upload a DataFrame to the processed bucket"""
+    csv_buffer = io.StringIO()
+    df.to_csv(csv_buffer, index=False)
+    s3_client.put_object(
+        Bucket=processed_bucket,
+        Key=filename,
+        Body=csv_buffer.getvalue()
+    )
+    logger.info(f"Uploaded: {filename}")
