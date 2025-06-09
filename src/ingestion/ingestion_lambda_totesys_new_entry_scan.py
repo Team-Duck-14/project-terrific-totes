@@ -59,7 +59,7 @@ def look_for_totesys_updates(conn, s3_client):
 
             # Get new or updated values from ToteSys with SQL query
             new_or_updated_entries = conn.run(f"SELECT * FROM {table} WHERE created_at >= :cutoff_timestamp OR last_updated >= :cutoff_timestamp", cutoff_timestamp = cutoff_timestamp)
-
+            print(new_or_updated_entries)
             # if new entries have been found, write to S3 ingest
             if len(new_or_updated_entries) > 0:
                 column_names = [col['name'] for col in conn.columns]
