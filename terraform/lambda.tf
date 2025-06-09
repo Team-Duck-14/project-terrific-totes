@@ -27,3 +27,20 @@ resource "aws_lambda_layer_version" "common_layer" {
   s3_bucket           = var.ingestion_bucket_name
   s3_key              = "lambda/layers/layer.zip"
 }
+
+resource "aws_lambda_function" "transform_lambda" {
+  function_name = var.transformation_lambda_name
+  role          = aws_iam_role.lambda_transform_role.arn
+  s3_bucket     = var.ingestion_bucket_name
+  s3_key        = "lambda/ingestion/lambda.zip"  # this or transform folder??
+  handler       = "src.transformation.transformation_lambda_handler.lambda_handler"
+  runtime       = "python3.11"
+  timeout       = 120
+  layers        = [aws_lambda_layer_version.common_layer.arn, "arn:aws:lambda:eu-west-2:336392948345:layer:AWSSDKPandas-Python311:2"]
+  environment {
+    variables = {
+      PROCESSED_BUCKET = var.processed_bucket_name
+      # do we need other variables here ?
+    }
+  }
+}

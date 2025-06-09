@@ -27,7 +27,10 @@ resource "aws_iam_policy" "step_function_lambda_invoke_policy" {
         Action = [
           "lambda:InvokeFunction"
         ],
-        Resource = aws_lambda_function.ingestion_lambda.arn //so step func can access ingest lambda only
+        Resource = [
+          aws_lambda_function.ingestion_lambda.arn,
+          aws_lambda_function.transform_lambda.arn
+        ]
       }
     ]
   })
@@ -73,8 +76,13 @@ resource "aws_sfn_state_machine" "step_function" {
     "States" : {
       "CallLambda" : {
         "Type" : "Task",
-        "Resource" : "${aws_lambda_function.ingestion_lambda.arn}",
-        "End" : true
+        "Resource" : aws_lambda_function.ingestion_lambda.arn,
+        "Next": "TransformLambda"
+      },
+      "TransformLambda": {
+      "Type": "Task",
+      "Resource": aws_lambda_function.transform_lambda.arn,
+      "End": true
       }
     }
   })

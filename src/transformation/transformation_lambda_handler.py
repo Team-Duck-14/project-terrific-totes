@@ -40,13 +40,18 @@ def lambda_handler(event, context):
             key = content["Key"]
             logger.info(f"Processing file: {key}")
 
+            # Skip files that are not CSVs
+            if not key.endswith('.csv'):
+                logger.info(f"Skipping non-CSV file: {key}")
+                continue
+
             extract_object = s3_client.get_object(
                 Bucket=ingestion_bucket,
                 Key=key,
             )
             file_bytes = extract_object["Body"].read()
             # Read the object content into a pandas DataFrame
-            df = pd.read_csv(io.BytesIO(file_bytes))
+            df = pd.read_csv(io.BytesIO(file_bytes), encoding="utf-8")
             
             filename = os.path.basename(key).replace(".csv", "")
             dfs[filename] = df            

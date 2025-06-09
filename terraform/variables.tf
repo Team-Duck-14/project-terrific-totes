@@ -4,6 +4,12 @@ variable "ingestion_lambda_name" {
   default     = "project-ingestion-lambda"
 }
 
+variable "transformation_lambda_name" {
+  description = "The name of transformation lambda"
+  type        = string
+  default     = "project-transform-lambda"
+}
+
 variable "ingestion_bucket_name" {
   default = "project-totesys-ingestion-bucket"
 }
