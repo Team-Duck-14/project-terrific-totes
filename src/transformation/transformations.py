@@ -55,13 +55,13 @@ def transform_dim_counterparty(counterparty_df, address_df):
     dim_counterparty_df = merged_df[[
         "counterparty_id",
         "counterparty_legal_name",
-        "counterparty_legal_address_line_1",
-        "counterparty_legal_address_line_2",
-        "counterparty_legal_district",
-        "counterparty_legal_city",
-        "counterparty_legal_postal_code",
-        "counterparty_legal_country",
-        "counterparty_legal_phone_number"
+        "address_line_1",
+        "address_line_2",
+        "district",
+        "city",
+        "postal_code",
+        "country",
+        "phone"
     ]].rename(columns={
         "address_line_1": "counterparty_legal_address_line_1",
         "address_line_2": "counterparty_legal_address_line_2",
