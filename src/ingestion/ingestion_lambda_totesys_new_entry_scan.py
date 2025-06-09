@@ -30,13 +30,13 @@ logger = logging.getLogger()
 logger.setLevel("INFO")
 
 # Conection to ToteSys
-# conn =  pg8000.native.Connection(
-#                 user = USER,
-#                 password = PASSWORD,
-#                 host = HOST,
-#                 database = DATABASE,
-#                 port = PORT
-#                 )
+conn =  pg8000.native.Connection(
+                user = USER,
+                password = PASSWORD,
+                host = HOST,
+                database = DATABASE,
+                port = PORT
+                )
 
 def look_for_totesys_updates(conn, s3_client):
     logger.info("Running update scan for ToteSys tables")
@@ -49,7 +49,7 @@ def look_for_totesys_updates(conn, s3_client):
     logger.info(f"Using cutoff timestamp: {cutoff_timestamp}")
     time_ingested = datetime.now().strftime("%Y-%m-%d_%H-%M-%S") # formats it as a string like "2025-05-29-12-00-00"
     
-    # UNCOMMENT for testing
+    # # UNCOMMENT for testing
     # ingested_tables = []
     
     try:
@@ -59,7 +59,7 @@ def look_for_totesys_updates(conn, s3_client):
 
             # Get new or updated values from ToteSys with SQL query
             new_or_updated_entries = conn.run(f"SELECT * FROM {table} WHERE created_at >= :cutoff_timestamp OR last_updated >= :cutoff_timestamp", cutoff_timestamp = cutoff_timestamp)
-            
+
             # if new entries have been found, write to S3 ingest
             if len(new_or_updated_entries) > 0:
                 column_names = [col['name'] for col in conn.columns]
@@ -75,10 +75,10 @@ def look_for_totesys_updates(conn, s3_client):
                 
                 logger.info(f"Successfully added new values from {table} to S3")
 
-                # Uncomment for tests
+                # # Uncomment for tests
                 # ingested_tables.append(df)
             
-        # Uncomment for tests
+        # # Uncomment for tests
         # return ingested_tables
 
         return {"Status Code": 200, "body": f"Uploaded new or updated values for {len(TABLES)} tables to S3 {BUCKET}"}
