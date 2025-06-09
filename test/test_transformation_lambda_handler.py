@@ -30,12 +30,12 @@ def test_lambda_handler_returns_expected_message(mock_s3):
     }
 
     mock_s3.get_object.return_value = {
-        "Body": MagicMock(read=MagicMock(return_value=b"sample,data"))
+        "Body": MagicMock(read=MagicMock(return_value=b"location_id,address_line_1,address_line_2,district,city,postal_code,country,phone\n1,123 Street,,Central,Metropolis,12345,Neverland,123456789"))
     }
 
     result = lambda_handler({}, {})
     assert result["statusCode"] == 200
-    assert "Retrieved 2 objects" in result["body"]
+    assert "Successfully processed 1 files: ['dim_location.csv']" in result["body"]
 
 @patch("src.transformation.transformation_lambda_handler.s3_client")
 def test_lambda_handler_no_objects_found(mock_s3):
@@ -43,4 +43,4 @@ def test_lambda_handler_no_objects_found(mock_s3):
 
     result = lambda_handler({}, {})
     assert result["statusCode"] == 200
-    assert result["body"] == "No objects found."
+    assert result["body"] == "No files to process."
