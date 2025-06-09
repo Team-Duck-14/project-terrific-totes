@@ -27,14 +27,15 @@ def s3_mock(mock_aws_credentials):
         yield
 
 # Uncomment to test
-conn =  pg8000.native.Connection(
-        user = os.environ['TOTESYS_USER'],
-        password = os.environ['TOTESYS_PASSWORD'],
-        host = os.environ['TOTESYS_HOST'],
-        database = os.environ['TOTESYS_DATABASE'],
-        port = os.environ['TOTESYS_PORT']
-        )
-
+@pytest.fixture
+def conn():
+    return pg8000.native.Connection(
+        user=os.environ['TOTESYS_USER'],
+        password=os.environ['TOTESYS_PASSWORD'],
+        host=os.environ['TOTESYS_HOST'],
+        database=os.environ['TOTESYS_DATABASE'],
+        port=int(os.environ['TOTESYS_PORT'])
+    )
 @pytest.mark.skip(reason="passed, but now fails because function was build up with TDD")
 def test_totesys_gets_data_from_totesys(conn, s3_mock):
 
@@ -46,7 +47,7 @@ def test_totesys_gets_data_from_totesys(conn, s3_mock):
     assert len(response[0]) > 0
 
 @pytest.mark.skip(reason="passed, but now fails because function was build up with TDD")
-def test_totesys_get_only_new_data(s3_mock):
+def test_totesys_get_only_new_data(conn, s3_mock):
     client = boto3.client("s3", region_name="eu-west-2")
     client.create_bucket(Bucket = "project-totesys-ingestion-bucket",
                          CreateBucketConfiguration={
@@ -63,7 +64,7 @@ def test_totesys_get_only_new_data(s3_mock):
             assert i >= demo_timestamp
 
 @pytest.mark.skip(reason="github actions machine has no access to ToteSys credentials")         
-def test_totesys_puts_new_data_in_s3_bucket(s3_mock):
+def test_totesys_puts_new_data_in_s3_bucket(conn, s3_mock):
     client = boto3.client("s3", region_name="eu-west-2")
     client.create_bucket(Bucket = "project-totesys-ingestion-bucket",
                          CreateBucketConfiguration={
