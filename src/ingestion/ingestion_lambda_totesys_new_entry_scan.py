@@ -30,13 +30,13 @@ logger = logging.getLogger()
 logger.setLevel("INFO")
 
 # Conection to ToteSys
-conn =  pg8000.native.Connection(
-                user = USER,
-                password = PASSWORD,
-                host = HOST,
-                database = DATABASE,
-                port = PORT
-                )
+# conn =  pg8000.native.Connection(
+#                 user = USER,
+#                 password = PASSWORD,
+#                 host = HOST,
+#                 database = DATABASE,
+#                 port = PORT
+#                 )
 
 def look_for_totesys_updates(conn, s3_client):
     logger.info("Running update scan for ToteSys tables")
