@@ -26,14 +26,14 @@ def s3_mock(mock_aws_credentials):
     with mock_aws():
         yield
 
-# # Uncomment to test
-# conn =  pg8000.native.Connection(
-#         user = os.environ['TOTESYS_USER'],
-#         password = os.environ['TOTESYS_PASSWORD'],
-#         host = os.environ['TOTESYS_HOST'],
-#         database = os.environ['TOTESYS_DATABASE'],
-#         port = os.environ['TOTESYS_PORT']
-#         )
+# Uncomment to test
+conn =  pg8000.native.Connection(
+        user = os.environ['TOTESYS_USER'],
+        password = os.environ['TOTESYS_PASSWORD'],
+        host = os.environ['TOTESYS_HOST'],
+        database = os.environ['TOTESYS_DATABASE'],
+        port = os.environ['TOTESYS_PORT']
+        )
 
 @pytest.mark.skip(reason="passed, but now fails because function was build up with TDD")
 def test_totesys_gets_data_from_totesys(conn, s3_mock):
