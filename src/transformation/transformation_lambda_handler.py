@@ -60,6 +60,9 @@ def lambda_handler(event, context):
 
         # Transform and upload dim_staff
         if "staff" in dfs and "department" in dfs:
+            ##
+            # does this handle each staff.csv in ingestion?
+            ##
             dim_staff_df = transform_dim_staff(dfs["staff"], dfs["department"])
             upload_df(dim_staff_df, "dim_staff.csv")
             processed.append("dim_staff.csv")

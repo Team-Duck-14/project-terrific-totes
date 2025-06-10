@@ -30,7 +30,7 @@ resource "aws_lambda_layer_version" "common_layer" {
 
 resource "aws_lambda_function" "transform_lambda" {
   function_name = var.transformation_lambda_name
-  role          = aws_iam_role.lambda_transform_role.arn
+  role          = aws_iam_role.lambda_role.arn
   s3_bucket     = var.ingestion_bucket_name
   s3_key        = "lambda/ingestion/lambda.zip"  # this or transform folder??
   handler       = "src.transformation.transformation_lambda_handler.lambda_handler"
