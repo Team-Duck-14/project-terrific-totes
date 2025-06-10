@@ -10,6 +10,12 @@ variable "transformation_lambda_name" {
   default     = "project-transform-lambda"
 }
 
+variable "load_lambda_name" {
+  description = "The name of load lambda"
+  type        = string
+  default     = "project-load-lambda"
+}
+
 variable "ingestion_bucket_name" {
   default = "project-totesys-ingestion-bucket"
 }
