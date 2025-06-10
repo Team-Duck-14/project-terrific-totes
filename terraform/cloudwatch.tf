@@ -6,12 +6,15 @@ data "aws_iam_policy_document" "cloudwatch_permissions" {
   statement {
     effect    = "Allow"
     actions   = ["logs:CreateLogGroup"]
-    resources = ["arn:aws:logs:*:*:*"] # all CloudWatch log resources in all regions and all accounts (region, account id, resource path)
+    resources = ["*"] # all CloudWatch log resources in all regions and all accounts (region, account id, resource path)
   }
   statement {
     effect    = "Allow"
     actions   = ["logs:CreateLogStream", "logs:PutLogEvents"]
-    resources = ["arn:aws:logs:*:*:log-group:/aws/lambda/${var.ingestion_lambda_name}:*"]
+    resources = [
+      "arn:aws:logs:*:*:log-group:/aws/lambda/${var.ingestion_lambda_name}:*",
+      "arn:aws:logs:*:*:log-group:/aws/lambda/${var.transformation_lambda_name}:*"
+      ]
   }
 }
 
