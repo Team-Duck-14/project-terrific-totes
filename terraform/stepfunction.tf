@@ -29,7 +29,8 @@ resource "aws_iam_policy" "step_function_lambda_invoke_policy" {
         ],
         Resource = [
           aws_lambda_function.ingestion_lambda.arn,
-          aws_lambda_function.transform_lambda.arn
+          aws_lambda_function.transform_lambda.arn,
+          aws_lambda_function.load_lambda.arn
         ]
       }
     ]
@@ -82,8 +83,17 @@ resource "aws_sfn_state_machine" "step_function" {
       "TransformLambda": {
       "Type": "Task",
       "Resource": aws_lambda_function.transform_lambda.arn,
+      "Next": "LoadLambda"
+      },
+      "LoadLambda": {
+      "Type": "Task",
+      "Resource": aws_lambda_function.load_lambda.arn,
       "End": true
       }
     }
   })
 }
+
+//But NO retry/catch built into this
+//so cannot handle Lambda failures (e.g., temporary timeouts) etc.
+//this can be done using a simple block, that we can add on
