@@ -44,3 +44,8 @@ def test_lambda_handler_no_objects_found(mock_s3):
     result = lambda_handler({}, {})
     assert result["statusCode"] == 200
     assert result["body"] == "No files to process."
+
+
+# upload df test
+
+# exception error? check ingestion tests?
