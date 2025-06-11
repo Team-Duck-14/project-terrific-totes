@@ -19,7 +19,7 @@ def get_connection():
     )
 
 # Tabs
-tab1, tab2, tab3 = st.tabs(["📅 Sales per Month", "🧑‍💼 Sales by Staff", "🎨 Sales by Design"])
+tab1, tab2, tab3, tab4 = st.tabs(["📅 Sales per Month", "🧑‍💼 Sales by Staff", "🎨 Sales by Design", "📍 Sales by Location"])
 
 # --- Tab 1: Sales per Month ---
 with tab1:
@@ -126,3 +126,32 @@ with tab3:
         st.bar_chart(df.set_index("design_name"))
     except Exception as e:
         st.error(f"Failed to load data: {e}")
+
+# --- Tab 4: Sales by Location ---
+with tab4:
+    st.subheader("Total Sales by Location")
+    query = """
+        SELECT 
+            CASE 
+                WHEN dim_staff.location ILIKE 'Leds' THEN 'Leeds'
+                ELSE dim_staff.location
+            END AS location,
+            SUM(fact_sales_order.units_sold * fact_sales_order.unit_price) AS total_sales
+        FROM fact_sales_order
+        JOIN dim_staff ON fact_sales_order.sales_staff_id = dim_staff.staff_id
+        GROUP BY 
+            CASE 
+        WHEN dim_staff.location ILIKE 'Leds' THEN 'Leeds'
+        ELSE dim_staff.location
+            END
+        ORDER BY total_sales DESC;
+    """
+    try:
+        with get_connection() as conn:
+            df = pd.read_sql(query, conn)
+        st.dataframe(df.style.format({"total_sales": "{:,.2f}"}))
+        st.bar_chart(df.set_index("location"))
+    except Exception as e:
+        st.error(f"Failed to load data: {e}")
+
+
