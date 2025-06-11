@@ -47,7 +47,7 @@ This pipeline provides:
 - AWS Step Functions – to orchestrate multi-step workflows
 - Amazon EventBridge – for scheduling and event triggering
 
-## 🛠️ DevOps & Infra
+## ⚙️ DevOps & Infra
 
 - Terraform – for infrastructure as code
 - Streamlit – for building interactive data visualisations
