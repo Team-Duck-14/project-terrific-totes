@@ -19,7 +19,7 @@ def get_connection():
     )
 
 # Tabs
-tab1, tab2, tab3, tab4 = st.tabs(["📅 Sales per Month", "🧑‍💼 Sales by Staff", "🎨 Sales by Design", "📍 Sales by Location"])
+tab1, tab2, tab3, tab4, tab5 = st.tabs(["📅 Sales per Month", "🧑‍💼 Sales by Staff", "🎨 Sales by Design", "📍 Sales by Location", "💷 Sales by Currency"])
 
 # --- Tab 1: Sales per Month ---
 with tab1:
@@ -154,4 +154,22 @@ with tab4:
     except Exception as e:
         st.error(f"Failed to load data: {e}")
 
+# --- Tab 5: Sales by Currency ---
+with tab5:
+    st.subheader("Total Sales by Currency")
+    query = """
+        SELECT dim_currency.currency_code,
+            SUM(fact_sales_order.units_sold * fact_sales_order.unit_price) AS total_sales
+        FROM fact_sales_order
+        JOIN dim_currency ON fact_sales_order.currency_id = dim_currency.currency_id
+        GROUP BY dim_currency.currency_code
+        ORDER BY total_sales DESC;
+    """
+    try:
+        with get_connection() as conn:
+            df = pd.read_sql(query, conn)
+        st.dataframe(df.style.format({"total_sales": "{:,.2f}"}))
+        st.bar_chart(df.set_index("currency_code"))
+    except Exception as e:
+        st.error(f"Failed to load data: {e}")
 
