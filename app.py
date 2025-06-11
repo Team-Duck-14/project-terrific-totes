@@ -19,7 +19,7 @@ def get_connection():
     )
 
 # Tabs
-tab1, tab2, tab3, tab4, tab5 = st.tabs(["📅 Sales per Month", "🧑‍💼 Sales by Staff", "🎨 Sales by Design", "📍 Sales by Location", "💷 Sales by Currency"])
+tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["📅 Sales per Month", "🧑‍💼 Sales by Staff", "🎨 Sales by Design", "📍 Sales by Location", "💷 Sales by Currency", "🧑‍🤝‍🧑 Top Customers"])
 
 # --- Tab 1: Sales per Month ---
 with tab1:
@@ -172,4 +172,27 @@ with tab5:
         st.bar_chart(df.set_index("currency_code"))
     except Exception as e:
         st.error(f"Failed to load data: {e}")
+
+# --- Tab 6: Top counterparties (customers) ---
+with tab6:
+    st.subheader("Top 10 Customers by Total Sales")
+    query = """
+        SELECT 
+            dim_counterparty.counterparty_legal_name AS top_customer,
+            SUM(fact_sales_order.units_sold * fact_sales_order.unit_price) AS total_sales
+        FROM fact_sales_order
+        JOIN dim_counterparty 
+            ON fact_sales_order.counterparty_id = dim_counterparty.counterparty_id
+        GROUP BY dim_counterparty.counterparty_legal_name
+        ORDER BY total_sales DESC
+        LIMIT 10;
+    """
+    try:
+        with get_connection() as conn:
+            df = pd.read_sql(query, conn)
+        st.dataframe(df.style.format({"total_sales": "{:,.2f}"}))
+        st.bar_chart(df.set_index("top_customer"))
+    except Exception as e:
+        st.error(f"Failed to load data: {e}")
+
 
