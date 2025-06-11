@@ -3,6 +3,7 @@
 Welcome to the Terrific Totes data engineering project by Northcoders Team 14 – Duck!  
 This project builds a cloud-based data platform to help a fictional company, Terrific Totes, manage and analyse their sales and operations data.
 
+
 ---
 
 ## 🚀 Project Overview
