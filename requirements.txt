@@ -8,3 +8,5 @@ pytest
 uvicorn
 pandas
 pyarrow
+streamlit
+psycopg2-binary
