@@ -64,44 +64,44 @@ def lambda_handler(event, context):
             # does this handle each staff.csv in ingestion?
             ##
             dim_staff_df = transform_dim_staff(dfs["staff"], dfs["department"])
-            upload_df(dim_staff_df, "dim_staff.csv")
-            processed.append("dim_staff.csv")
+            upload_parquet(dim_staff_df, "dim_staff.parquet")
+            processed.append("dim_staff.parquet")
 
         # Transform and upload dim_counterparty
         if "counterparty" in dfs and "address" in dfs:
             dim_counterparty_df = transform_dim_counterparty(dfs["counterparty"], dfs["address"])
-            upload_df(dim_counterparty_df, "dim_counterparty.csv")
-            processed.append("dim_counterparty.csv")
+            upload_parquet(dim_counterparty_df, "dim_counterparty.parquet")
+            processed.append("dim_counterparty.parquet")
 
         # Transform and upload dim_currency
         if "currency" in dfs:
             dim_currency_df = transform_dim_currency(dfs["currency"])
-            upload_df(dim_currency_df, "dim_currency.csv")
-            processed.append("dim_currency.csv")
+            upload_parquet(dim_currency_df, "dim_currency.parquet")
+            processed.append("dim_currency.parquet")
 
         # Transform and upload dim_date
         if "sales_order" in dfs and "purchase_order" in dfs and "payment" in dfs:
             dim_date_df = transform_dim_date(dfs["sales_order"], dfs["purchase_order"], dfs["payment"])
-            upload_df(dim_date_df, "dim_date.csv")
-            processed.append("dim_date.csv")
+            upload_parquet(dim_date_df, "dim_date.parquet")
+            processed.append("dim_date.parquet")
 
         # Transform and upload dim_design
         if "design" in dfs:
             dim_design_df = transform_dim_design(dfs["design"])
-            upload_df(dim_design_df, "dim_design.csv")
-            processed.append("dim_design.csv")
+            upload_parquet(dim_design_df, "dim_design.parquet")
+            processed.append("dim_design.parquet")
 
         # Transform and upload dim_location
         if "address" in dfs:
             dim_location_df = transform_dim_location(dfs["address"])
-            upload_df(dim_location_df, "dim_location.csv")
-            processed.append("dim_location.csv")
+            upload_parquet(dim_location_df, "dim_location.parquet")
+            processed.append("dim_location.parquet")
 
         # Transform and upload fact_sales_order
         if "sales_order" in dfs:
             fact_sales_order_df = transform_fact_sales_order(dfs["sales_order"])
-            upload_df(fact_sales_order_df, "fact_sales_order.csv")
-            processed.append("fact_sales_order.csv")
+            upload_parquet(fact_sales_order_df, "fact_sales_order.parquet")
+            processed.append("fact_sales_order.parquet")
 
         if not processed:
             logger.warning("No transformations applied due to missing dependencies.")
@@ -125,13 +125,14 @@ def lambda_handler(event, context):
             "body": f"Unhandled error: {e}"
         }
     
-def upload_df(df, filename):
-    """Helper function to upload a DataFrame to the processed bucket"""
-    csv_buffer = io.StringIO()
-    df.to_csv(csv_buffer, index=False)
+def upload_parquet(df, filename):
+    """Upload a DataFrame as a Parquet file to the processed bucket"""
+    buffer = io.BytesIO()
+    df.to_parquet(buffer, index=False, engine='pyarrow')
+    buffer.seek(0)
     s3_client.put_object(
         Bucket=processed_bucket,
         Key=filename,
-        Body=csv_buffer.getvalue()
+        Body=buffer.getvalue()
     )
     logger.info(f"Uploaded: {filename}")
